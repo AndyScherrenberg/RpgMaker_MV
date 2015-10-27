@@ -1,13 +1,13 @@
 
 	var Imported = Imported || {};
-	Imported.Tone_Frysning = true;
+	Imported.Frysning_Tone = true;
 
 /*:
  * @plugindesc Easy to manage tones for different situations in
  * your game There are 27 tones supported.  
  * @author Frysning
 
- * @param useTimedTone
+ * @param useTime
  * @desc if you want to update the tones on based on time set it on 1.
  * @default 0
 
@@ -19,7 +19,7 @@
  * @desc When do you want to let midnight start?
  * @default 0 
 
- * @param LateMorningStart
+ * @param MorningStart
  * @desc When do you want to let morning start?
  * @default 6
 
@@ -39,8 +39,8 @@
  * @desc W A switch for Midnight events change the number for the gameSwitch
  * @default 1
  
- * @param LateMorningSwitch
- * @desc  A switch for LateMorning events change the number for the gameSwitch
+ * @param MorningSwitch
+ * @desc  A switch for Morning events change the number for the gameSwitch
  * @default 2
 
  * @param NoonSwitch
@@ -63,8 +63,8 @@
  * @desc the common value for the Midnight_Tone
  * @default [-102,-102,-64,68]
 
- * @param Late_Morning_Tone
- * @desc the common value for the Late_Morning_Tone
+ * @param Morning_Tone
+ * @desc the common value for the Morning_Tone
  * @default [-14,-14,-10,15]
 
  * @param Noon_Tone
@@ -174,7 +174,7 @@
 
  * The game can automatic update the tone depending on the time of your
  * device 
- * for this set useTimedTone to 1
+ * for this set useTime to 1
 
  * You can turn of the tones in battle
  * for this set the var useBattleTone to 0
@@ -187,10 +187,74 @@
 
  * credits to TheUnproPro for giving me this idea to make.
 
+ * If you want to use the based on time then set the param:
+ * useTimeTone to 1 if not set it to 0.
+
+ * You can choice to use the tones in Battle yes or no.
+ * useBattleTone is one of the params that you can set. 1 for true, 0 for false
+
+ * A lot of things are configurable so you can easy it.
+ * Custom Times:
+ * If you use the automatic time system you can set the the following variables.
+ * The times are based on 00-23 format. All of these are integers and are getting used in the script like this.
+ * Midnight runs from MignightStart to MorningStart. Morning runs from  till NoonStart and so on.
+
+ *  MidnightStart
+ *  Morning
+ *  NoonStart
+ *  AfternoonStart
+ *  NightStart
+
+Tones:
+You can create up to 27 different tones.
+Tones are an array of 4 numbers. [red,green,blue,gray]  Minimum -255 & Maximum 255
+    Null_Tone this tone is used for clearing the tone.
+    Midnight_Tone this is the tone it uses for midnight
+    Morning_Tone this is the tone it uses for the morning
+    Noon_Tone this is the tone it uses for noon
+    Afternoon_Tone this is the tone it uses for the afternoon
+    Night_Tone this is the tone it uses for the night
+    Custom_Tone_0 till Custom_Tone_20 these tones are made for if you want to use a different tone.
+
+
+Switches:
+
+It is possible to set up to 5 gameSwitches. These switches are meant to use for time depending events. 
+In the variable list you can sign them to a switch.
+    MidnightSwitch
+    MorningSwitch
+    NoonSwitch
+    AfternoonSwitch
+    NightSwitch
+
+PluginCommands:
+
+setTone(Tone):
+With this pluging command you can set a tone. It need 1 parameter ypi can send it a string. Example:
+You want to use Custom_Tone_12 in an event. Just do setTone("Custom_Tone_12") as a plugin command.
+
+
+clearTone
+With this plugin command you can clear the current tone. Null_Tone gets used for this.
+
+
+setUseBattleTone
+Maybe you want for a certain fight that you need an extra tone in it or not. Well that is possible
+you can on the run change if this should happen yes or no.
+If call a plugin command wit setUseBattleTone(1) it will turn battletones on. if you use a 0 here it will turn it of.
+
+setUseTime
+So your game  started and the player was not bound to a time system. 
+But on a certain part you want that this happens. Well no problem you can turn this on!
+just call setUseTime(1) for activate and for decactivate use 0.
+
+Just drop it in your plugin folder and activate it. Set the variables and have fun.
+If you have any problems with it just let me know.
+
 */
 
-	var Tone_Frysning = Tone_Frysning || {};
-	Tone_Frysning.Parameters = PluginManager.parameters('Tone_Frysning');
+	var Frysning_Tone = Frysning_Tone || {};
+	Frysning_Tone.Parameters = PluginManager.parameters('Frysning_Tone');
 	var ShouldUpdate = false;
 	var CurrenTone = "";
 	var OldTone = "";
@@ -200,12 +264,12 @@
 
 		if (com === "setTone")
 			$gameMap.setTone(param);
-		if (com === "setUseTimedZone")
-			Tone_Frysning.setUseTimedZone(param);
+		if (com === "setUseTime")
+			Frysning_Tone.setUseTime(param);
 		if (com === "setUseBattleTone")
-			Tone_Frysning.setUseBattleTone(param);
+			Frysning_Tone.setUseBattleTone(param);
 		if (com === "clearTone")
-			Tone_Frysning.clearTone();
+			Frysning_Tone.clearTone();
 	};
 
 	Game_Map.prototype.setTone = function(tint) {
@@ -214,50 +278,52 @@
 
 		CurrenTone = tint;
 
-		if ( Tone_Frysning.Parameters[tint] === null ){
+		if ( Frysning_Tone.Parameters[tint] === null ){
 			console.log(tint + " is not known");
 		}
 		else{
-			Tone_Frysning.setSwitch(tint);
-			$gameScreen.startTint( JSON.parse(Tone_Frysning.Parameters[tint]),0);
+			
+			Frysning_Tone.setSwitch(tint);
+
+			$gameScreen.startTint(JSON.parse(Frysning_Tone.Parameters[tint]),0);
 		}
 	};
 
 
-	Tone_Frysning.setSwitch= function(param)
+	Frysning_Tone.setSwitch= function(param)
 	{
 		param = param.toString();
-		$gameSwitches.setValue(Tone_Frysning.Parameters["MidnightSwitch"], false);
-		$gameSwitches.setValue(Tone_Frysning.Parameters["LateMorningSwitch"], false);
-		$gameSwitches.setValue(Tone_Frysning.Parameters["NoonSwitch"], false);
-		$gameSwitches.setValue(Tone_Frysning.Parameters["AfternoonSwitch"], false);
-		$gameSwitches.setValue(Tone_Frysning.Parameters["NightSwitch"], false);
+		$gameSwitches.setValue(Frysning_Tone.Parameters["MidnightSwitch"], false);
+		$gameSwitches.setValue(Frysning_Tone.Parameters["MorningSwitch"], false);
+		$gameSwitches.setValue(Frysning_Tone.Parameters["NoonSwitch"], false);
+		$gameSwitches.setValue(Frysning_Tone.Parameters["AfternoonSwitch"], false);
+		$gameSwitches.setValue(Frysning_Tone.Parameters["NightSwitch"], false);
 
 		switch(param){
 			case "Midnight_Tone":
 		{
-			$gameSwitches.setValue(Tone_Frysning.Parameters["MidnightSwitch"], true);
+			$gameSwitches.setValue(Frysning_Tone.Parameters["MidnightSwitch"], true);
 			break;
 		}
 
-			case "Late_Morning_Tone":
+			case "Morning_Tone":
 		{
-			$gameSwitches.setValue(Tone_Frysning.Parameters["LateMorningSwitch"], true);
+			$gameSwitches.setValue(Frysning_Tone.Parameters["MorningSwitch"], true);
 			break;
 		}
 		case "Noon_Tone":
 		{
-			$gameSwitches.setValue(Tone_Frysning.Parameters["NoonSwitch"], true);
+			$gameSwitches.setValue(Frysning_Tone.Parameters["NoonSwitch"], true);
 			break;
 		}
 		case "Afternoon_Tone":
 		{
-			$gameSwitches.setValue(Tone_Frysning.Parameters["AfternoonSwitch"], true);
+			$gameSwitches.setValue(Frysning_Tone.Parameters["AfternoonSwitch"], true);
 			break;
 		}
 		case "Night_Tone":
 		{
-			$gameSwitches.setValue(Tone_Frysning.Parameters["NightSwitch"], true);
+			$gameSwitches.setValue(Frysning_Tone.Parameters["NightSwitch"], true);
 			break;
 		}
 			default:
@@ -268,63 +334,60 @@
 	}
 
 
-	Tone_Frysning.clearTone = function(){
+	Frysning_Tone.clearTone = function(){
 		CurrenTone = "";
 		Game_Map.prototype.setTone("Null_Tone");
 	}
 
 	//Set The use timeZone 1 for true all the others are false;
-	Tone_Frysning.setUseTimedZone =function(set){
-		Tone_Frysning.Parameters["useTimedTone"] = set;
-		Tone_Frysning.clearTone();
-
+	Frysning_Tone.setUseTime =function(set){
+		Frysning_Tone.Parameters["useTime"] = set;
+		Frysning_Tone.clearTone();
 	}
 
 	//Set The useBattleTone 1 for true all the others are false;
-	Tone_Frysning.setUseBattleTone=function(set){
-		Tone_Frysning.Parameters["useBattleTone"] = set;
+	Frysning_Tone.setUseBattleTone=function(set){
+		Frysning_Tone.Parameters["useBattleTone"] = set;
 		console.log($gameTroop)
 	}
 
-	Tone_Frysning.Update = function(){
-
-
+	Frysning_Tone.Update = function(){
 
 		if($gameTroop._inBattle == true){ 
-			if (Tone_Frysning.Parameters["useBattleTone"] != 1){
+			if (Frysning_Tone.Parameters["useBattleTone"] != 1){
 				if (OldTone =="")
 				OldTone = CurrenTone;
 
-				Tone_Frysning.clearTone();
+				Frysning_Tone.clearTone();
 				ShouldUpdate = true;
 				return;
 			}
 		}	
 
-		if (Tone_Frysning.Parameters["useTimedTone"] == 1){
+		if (Frysning_Tone.Parameters["useTime"] == 1){
 			if (DataManager.isMapLoaded()){
 				ti =new Date().getHours();
-
-			   	if(ti >= Tone_Frysning.Parameters["MidnightStart"]  && ti <Tone_Frysning.Parameters["LateMorningStart"]  )	{
+			   	if(ti >= Frysning_Tone.Parameters["MidnightStart"]  && ti < Frysning_Tone.Parameters["MorningStart"]  )	{
+			   		
 			   		Game_Map.prototype.setTone("Midnight_Tone")
 			   	}
-			   	else if(ti >= Tone_Frysning.Parameters["LateMorningStart"]   && ti < Tone_Frysning.Parameters["NoonStart"]  )  {
-			   		Game_Map.prototype.setTone("Late_Morning_Tone")
+			   	else if(ti >= Frysning_Tone.Parameters["MorningStart"]   && ti < Frysning_Tone.Parameters["NoonStart"]  )  {
+			   		Game_Map.prototype.setTone("Morning_Tone")
 			   	}
-			   	else if(ti >= Tone_Frysning.Parameters["NoonStart"]    && ti < Tone_Frysning.Parameters["AfternoonStart"]  ){
+			   	else if(ti >= Frysning_Tone.Parameters["NoonStart"]    && ti < Frysning_Tone.Parameters["AfternoonStart"]  ){
 			   		Game_Map.prototype.setTone("Noon_Tone")
 			   	}
-			   	else if(ti >= Tone_Frysning.Parameters["AfternoonStart"]    && ti < Tone_Frysning.Parameters["NightStart"]  ){
+			   	else if(ti >= Frysning_Tone.Parameters["AfternoonStart"]    && ti < Frysning_Tone.Parameters["NightStart"]  ){
 			   		Game_Map.prototype.setTone("Afternoon_Tone")
 			   	}
-			    else if(ti >= Tone_Frysning.Parameters["NightStart"] ){
+			    else if(ti >= Frysning_Tone.Parameters["NightStart"] ){
 			   		Game_Map.prototype.setTone("Night_Tone")
 			   	}
 			
 			}
 		}
 
-		if($gameTroop._inBattle == false && Tone_Frysning.Parameters["useTimedTone"] != 1){ 
+		if($gameTroop._inBattle == false && Frysning_Tone.Parameters["useTime"] != 1){ 
 			if (ShouldUpdate == true)
 			{
 				console.log(OldTone);
@@ -340,4 +403,4 @@
 	Window.prototype.update =
 	function() {
 	    oldUpdate.apply(this, arguments); 
-	    Tone_Frysning.Update();}
+	    Frysning_Tone.Update();}
