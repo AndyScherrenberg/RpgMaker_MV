@@ -35,6 +35,26 @@
  * @desc When do you want to let night start?
  * @default 19
 
+ * @param MidnightSwitch
+ * @desc When do you want to let night start?
+ * @default 1
+ 
+ * @param LateMorningSwitch
+ * @desc When do you want to let night start?
+ * @default 2
+
+  * @param NoonSwitch
+ * @desc When do you want to let night start?
+ * @default 3
+
+  * @param AfternoonSwitch
+ * @desc When do you want to let night start?
+ * @default 4
+
+  * @param NightSwitch
+ * @desc When do you want to let night start?
+ * @default 5
+
  * @param Null_Tone
  * @desc the common value for the Null_Tone
  * @default [0,0,0,0]
@@ -197,9 +217,54 @@
 			console.log(tint + " is not known");
 		}
 		else{
+			Tone_Frysning.setSwitch(tint);
 			$gameScreen.startTint( JSON.parse(Tone_Frysning.Parameters[tint]),0);
 		}
 	};
+
+
+	Tone_Frysning.setSwitch= function(param)
+	{
+		param = param.toString();
+		$gameSwitches.setValue(Tone_Frysning.Parameters["MidnightSwitch"], false);
+		$gameSwitches.setValue(Tone_Frysning.Parameters["LateMorningSwitch"], false);
+		$gameSwitches.setValue(Tone_Frysning.Parameters["NoonSwitch"], false);
+		$gameSwitches.setValue(Tone_Frysning.Parameters["AfternoonSwitch"], false);
+		$gameSwitches.setValue(Tone_Frysning.Parameters["NightSwitch"], false);
+
+		switch(param){
+			case "Midnight_Tone":
+		{
+			$gameSwitches.setValue(Tone_Frysning.Parameters["MidnightSwitch"], true);
+			break;
+		}
+
+			case "Late_Morning_Tone":
+		{
+			$gameSwitches.setValue(Tone_Frysning.Parameters["LateMorningSwitch"], true);
+			break;
+		}
+		case "Noon_Tone":
+		{
+			$gameSwitches.setValue(Tone_Frysning.Parameters["NoonSwitch"], true);
+			break;
+		}
+		case "Afternoon_Tone":
+		{
+			$gameSwitches.setValue(Tone_Frysning.Parameters["AfternoonSwitch"], true);
+			break;
+		}
+		case "Night_Tone":
+		{
+			$gameSwitches.setValue(Tone_Frysning.Parameters["NightSwitch"], true);
+			break;
+		}
+			default:
+			{
+				break;
+			}
+		}
+	}
 
 
 	Tone_Frysning.clearTone = function(){
@@ -256,11 +321,4 @@
 	Window.prototype.update =
 	function() {
 	    oldUpdate.apply(this, arguments); 
-	    Tone_Frysning.Update();
-	};
-
-
-   
-
-
-
+	    Tone_Frysning.Update();}
