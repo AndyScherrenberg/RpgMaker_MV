@@ -36,23 +36,23 @@
  * @default 19
 
  * @param MidnightSwitch
- * @desc When do you want to let night start?
+ * @desc W A switch for Midnight events change the number for the gameSwitch
  * @default 1
  
  * @param LateMorningSwitch
- * @desc When do you want to let night start?
+ * @desc  A switch for LateMorning events change the number for the gameSwitch
  * @default 2
 
-  * @param NoonSwitch
- * @desc When do you want to let night start?
+ * @param NoonSwitch
+ * @desc  A switch for Noon events change the number for the gameSwitch
  * @default 3
 
-  * @param AfternoonSwitch
- * @desc When do you want to let night start?
+ * @param AfternoonSwitch
+ * @desc  A switch for  Afternoon events change the number for the gameSwitch
  * @default 4
 
-  * @param NightSwitch
- * @desc When do you want to let night start?
+ * @param NightSwitch
+ * @desc A switch for night events change the number for the gameSwitch
  * @default 5
 
  * @param Null_Tone
@@ -191,8 +191,9 @@
 
 	var Tone_Frysning = Tone_Frysning || {};
 	Tone_Frysning.Parameters = PluginManager.parameters('Tone_Frysning');
-
+	var ShouldUpdate = false;
 	var CurrenTone = "";
+	var OldTone = "";
 	Game_Interpreter.prototype.pluginCommand = function(command, args) {
 		var com = command.split('(')[0];
 		var param = command.substring(command.lastIndexOf("(")+1,command.lastIndexOf(")"));
@@ -268,7 +269,8 @@
 
 
 	Tone_Frysning.clearTone = function(){
-			Game_Map.prototype.setTone("Null_Tone");
+		CurrenTone = "";
+		Game_Map.prototype.setTone("Null_Tone");
 	}
 
 	//Set The use timeZone 1 for true all the others are false;
@@ -286,9 +288,15 @@
 
 	Tone_Frysning.Update = function(){
 
+
+
 		if($gameTroop._inBattle == true){ 
 			if (Tone_Frysning.Parameters["useBattleTone"] != 1){
+				if (OldTone =="")
+				OldTone = CurrenTone;
+
 				Tone_Frysning.clearTone();
+				ShouldUpdate = true;
 				return;
 			}
 		}	
@@ -313,6 +321,17 @@
 			   		Game_Map.prototype.setTone("Night_Tone")
 			   	}
 			
+			}
+		}
+
+		if($gameTroop._inBattle == false && Tone_Frysning.Parameters["useTimedTone"] != 1){ 
+			if (ShouldUpdate == true)
+			{
+				console.log(OldTone);
+				ShouldUpdate = false;
+				Game_Map.prototype.setTone(OldTone)
+				OldTone = "";
+
 			}
 		}
 	}
