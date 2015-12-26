@@ -9,7 +9,10 @@
 
 	var Frysning_SelfSwitch = Frysning_SelfSwitch || {};
 
-	Game_Interpreter.prototype.pluginCommand = function(command, args) {
+	var Switch_Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
+
+    Game_Interpreter.prototype.pluginCommand = function(command, args) {
+         Switch_Game_Interpreter_pluginCommand.call(this, command, args);
 		if (command === "setSwitch")
 			Frysning_SelfSwitch.setSwitch(args[0],args[1],args[2]);
 	};

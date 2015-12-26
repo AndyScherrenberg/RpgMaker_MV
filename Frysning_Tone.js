@@ -258,7 +258,10 @@ If you have any problems with it just let me know.
 	var ShouldUpdate = false;
 	var CurrenTone = "";
 	var OldTone = "";
-	Game_Interpreter.prototype.pluginCommand = function(command, args) {
+
+	var Tone_Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
+    Game_Interpreter.prototype.pluginCommand = function(command, args) {
+        Tone_Game_Interpreter_pluginCommand.call(this, command, args);
 		var com = command.split('(')[0];
 		var param = command.substring(command.lastIndexOf("(")+1,command.lastIndexOf(")"));
 

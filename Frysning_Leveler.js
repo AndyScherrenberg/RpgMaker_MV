@@ -1,9 +1,8 @@
 
 	var Imported = Imported || {};
 	Imported.Frysning_Leveler = true;
-
 /*:
- * @plugindesc V1.2: Change level of monsters. So you wont feel overpowerd
+ * @plugindesc V1.3: Change level of monsters. So you wont feel overpowerd
  * Supports a lot of customization!
  * @author Frysning
 
@@ -198,7 +197,19 @@
  * By default these variables will not get saved. When you save your game.
  * But you can save them by turning on the parameter.
 
+ * Monster leveling in combat
+ * A monster can be leveled up or down in combat whilts using skills.
+ * For leveling up a monster use the following note in the skill
+ * <level up>
+ * For deleveling a monster use the following note in the skill
+ * <level down>
+
  * Change Log:
+ 
+ * V1.3:
+ * Changed the Plugin command function, so it don't override others anymore.
+ * Skill properties to level up a monster; <level up> in the skill note;
+ * Skill properties to level down a monster; <level down> in the skill note;
 
  * V1.2:
  * Added support for GameVariables
@@ -245,8 +256,10 @@
 			Frysning_Leveler.Parameters[stat +"_stat"] = variable;
 	}*/
 
+	var Level_Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
 
-	Game_Interpreter.prototype.pluginCommand = function(command, args) {
+    Game_Interpreter.prototype.pluginCommand = function(command, args) {
+         Level_Game_Interpreter_pluginCommand.call(this, command, args);
 		if (command === "setUsePartyLeader")
 			Frysning_Leveler.setUsePartyLeader(args[0]);
 		if (command === "setLevelVar")
@@ -428,7 +441,87 @@
 
 		if (Frysning_Leveler.Parameters["DebugModo"] == 1)
 		{
-			this.new_values=[];
+			this.DebugModo();
+		}
+	};
+
+
+	Frysning_Leveler.Game_Action_ApplyBeforeEffect = Game_Action.prototype.applyBeforeEffect;
+	Game_Action.prototype.applyBeforeEffect = function(target) {
+	
+		if( Frysning_Leveler.Game_Action_ApplyBeforeEffect !== undefined && Frysning_Leveler.Game_Action_ApplyBeforeEffect !== null) 
+			Frysning_Leveler.Game_Action_ApplyBeforeEffect.call(this,target);
+		
+		if(target.isEnemy())
+		{
+			var pattern = /<level up>/i
+			var val = this.item().note.match(pattern)
+
+			if(val !== null)
+				target.IncreaseLevel();
+
+			var pattern = /<level down>/i
+			var val = this.item().note.match(pattern)
+
+			if(val !== null)
+				target.DecreaseLevel();
+		}
+	};
+
+
+	Frysning_Leveler.Game_Action_Apply = Game_Action.prototype.apply;
+	Game_Action.prototype.apply = function(target) {
+		if(Imported.YEP_SkillCore === undefined)
+			this.applyBeforeEffect(target);
+
+		Frysning_Leveler.Game_Action_Apply.call(this,target);
+
+   };
+
+
+	Level_Game_Action_executeDamage = Game_Action.prototype.executeDamage;
+	Game_Action.prototype.executeDamage = function(target, value) {
+    	Level_Game_Action_executeDamage.call(this,target,value);
+    };
+
+
+	Game_Enemy.prototype.IncreaseLevel = function(){
+		if(this.level_frys  < this.max)
+		{
+			minLevel = this.level_frys;
+			this.level_frys++;
+			for( i= 0; i <= 9; i++){
+				this.IncreaseStat(i, minLevel);
+			}			
+		}
+
+
+		if (Frysning_Leveler.Parameters["DebugModo"] == 1)
+		{
+			this.DebugModo();
+		}
+
+	}
+
+
+	Game_Enemy.prototype.DecreaseLevel = function(){
+		if(this.level_frys  > this.min)
+		{
+			maxLevel = this.level_frys;
+			this.level_frys--;
+			for( i= 0; i <= 9; i++){
+				this.IncreaseStat(i, maxLevel,true);
+			}			
+		}
+
+		if (Frysning_Leveler.Parameters["DebugModo"] == 1)
+		{
+			this.DebugModo();
+		}
+	}
+
+	Game_Enemy.prototype.DebugModo = function(){
+		this.new_values=[];
 			for( i= 0; i <= 7; i++){	
 				this.new_values[i] = this.param(i)
 			}
@@ -449,10 +542,17 @@
 
 			console.log('Eventually: ');
 			console.log(this.new_values )
-		}
-	};
+	
+	}
 
-	Game_Enemy.prototype.IncreaseStat = function(type) {
+	Game_Enemy.prototype.IncreaseStat = function(type, minLevel, decrease) {
+
+		if(minLevel === undefined || minLevel === null)
+			minLevel = this.min;
+
+		if(decrease === undefined || decrease === null)
+			decrease = false;
+
 		var s = Frysning_Leveler.paramNames[type]; 
 		stat = this.NoteArray.match(Frysning_Leveler.createRegex(s));
 
@@ -489,24 +589,51 @@
 			baseStat = this.exp();
 
 		if (increasePercent === true){
-			if(increasing.length == 2)
-				increasefloaty =  parseFloat(1+"." +increasing);
-			if(increasing.length == 1)
-				increasefloaty =  parseFloat(1+".0" +increasing);
-			if(increasing.length == 3)
-				increasefloaty =  parseFloat(increasing[0]+"." +increasing[1] + "" + increasing[2]);
+			if(decrease){
+				var nValue = 1.0;
+				if(increasing.length == 2){
+					increasefloaty =  parseFloat(0+"." +increasing);
+					increasefloaty = nValue - increasefloaty;
+				}
+				if(increasing.length == 1){
+					increasefloaty =  parseFloat(0+".0" +increasing);
+					increasefloaty = nValue - increasefloaty;
+				}
+				if(increasing.length == 3)
+					increasefloaty =  parseFloat(increasing[0]+"." +increasing[1] + "" + increasing[2]);
+			}
+			else{
+				if(increasing.length == 2)
+					increasefloaty =  parseFloat(1+"." +increasing);
+				if(increasing.length == 1)
+					increasefloaty =  parseFloat(1+".0" +increasing);
+				if(increasing.length == 3)
+					increasefloaty =  parseFloat(increasing[0]+"." +increasing[1] + "" + increasing[2]);
+			}
 			increasing = increasefloaty
 		}
 
-		for(j = this.min; j< this.level_frys; j++){
-			if (increasePercent === true){
-				baseStat = baseStat *  increasing;
-			}
-			else{
-				baseStat += parseInt(increasing);
+
+		if(decrease){
+			for (j = minLevel; j > this.level_frys; j--){
+				if (increasePercent === true){
+					baseStat = baseStat *  increasing;
+				}
+				else{
+				baseStat -= parseInt(increasing);
+				}
 			}
 		}
-
+		else{
+			for(j = minLevel; j< this.level_frys; j++){
+				if (increasePercent === true){
+					baseStat = baseStat *  increasing;
+				}
+				else{
+					baseStat += parseInt(increasing);
+				}
+			}
+		}
 		this.level_param[type] =Math.round(baseStat); 
 		if (type==0){
 			this._hp = Math.round(baseStat); 
@@ -535,6 +662,8 @@
 					return this.level_param[8]
 	    return this.enemy().gold;
 	}
+
+
 
 
 	Frysning_Leveler.setup = Game_Troop.prototype.setup;
