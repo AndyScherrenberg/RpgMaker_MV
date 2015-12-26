@@ -206,6 +206,9 @@
 
  * Change Log:
  
+ * V1.3.1:
+ * Bug fix: Monster will not be completly restored with a level up/down. 
+
  * V1.3:
  * Changed the Plugin command function, so it don't override others anymore.
  * Skill properties to level up a monster; <level up> in the skill note;
@@ -491,7 +494,7 @@
 			minLevel = this.level_frys;
 			this.level_frys++;
 			for( i= 0; i <= 9; i++){
-				this.IncreaseStat(i, minLevel);
+				this.IncreaseStat(i, minLevel,false, true);
 			}			
 		}
 
@@ -510,7 +513,7 @@
 			maxLevel = this.level_frys;
 			this.level_frys--;
 			for( i= 0; i <= 9; i++){
-				this.IncreaseStat(i, maxLevel,true);
+				this.IncreaseStat(i, maxLevel,true, true);
 			}			
 		}
 
@@ -545,10 +548,14 @@
 	
 	}
 
-	Game_Enemy.prototype.IncreaseStat = function(type, minLevel, decrease) {
+	Game_Enemy.prototype.IncreaseStat = function(type, minLevel, decrease, isleveled) {
 
 		if(minLevel === undefined || minLevel === null)
 			minLevel = this.min;
+
+		if(isleveled === undefined || isleveled === null)
+			isleveled = false;
+
 
 		if(decrease === undefined || decrease === null)
 			decrease = false;
@@ -636,9 +643,11 @@
 		}
 		this.level_param[type] =Math.round(baseStat); 
 		if (type==0){
+			if(!isleveled)
 			this._hp = Math.round(baseStat); 
 		}
 		if (type==1){
+			if(!isleveled)
 			this._mp = Math.round(baseStat); 
 		}
 	}
