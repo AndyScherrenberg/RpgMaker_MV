@@ -1,0 +1,76 @@
+
+{
+	"Dolls" :[ 
+	{ 	
+		"_Id": 1,
+		"Name":"Sakuya Izayoi",
+  		"iName":"Sakuya",
+  		"Title":"Maid of the Devil",
+  		"Description":[
+"A Doll infused with the Powers of Izayoi Sakuya.",
+"After getting rid of the vermin in the mansion, she",
+"gave same magic power to use. The doll gives of a ",
+"vibe to want to clean. Sakuya is the head maid at the ",
+"scarlet devil mansion and spends most of her time there. ",
+"She has the ability to manipulate time and uses ",
+"silver knifes to attack. "
+  		],
+ 		"itemId": 5,
+ 		"givesExtra":[
+ 			{
+ 				"Doll": 2,
+ 				"Skill":11
+ 			},
+ 			{
+ 				"Doll": 3,
+ 				"Skill":8
+ 			}
+ 		],
+ 		"actorCombiners":[
+			{
+				"ActorId":1,
+				"Skill":8
+			},
+				{
+				"ActorId":5,
+				"Skill":8
+			}
+ 		]
+   	},
+	{ 
+		"_Id": 2,
+		"Name":"Reimu Hakurei",
+  		"iName":"Reimu",
+		"Title":"Shrime maiden of paredise",
+		"Description": 
+		["A Doll infused with the magic Powers of Hakurei Reimu.",
+		"After helping Reimu at the shrine she gave a ",
+		"small amount of magic power.",
+		"This doll keeps you giving a vibe to donate to Reimu (Greedy Doll).",
+		"Reimu is the current Shrine Maiden of the Hakurei shrine",
+		"and solves most of the incidents, if she cares enough.",
+		"She has the ability to float.Her personality is straightforward,",
+		"optimistic, and a bit curious. She's quick to anger",
+		"if offended, but just as quick to offer help to those in need.",
+"She has befriended many of the Youkai she defeated.",
+"Never hurt the donation box!"],
+		"itemId": 1,
+		"givesExtra":[
+			{
+ 				"Doll": 1,
+ 				"Skill":11
+ 			}
+ 		],
+		"actorCombiners":[]
+	},
+	{ 	
+		"_Id": 3,
+		"Name":"Youmu Konpaku",
+  		"iName":"Youmu",
+		"Title":"Ghostly Swordswoman.",
+		"Description":[],
+		"itemId": 1,
+		"givesExtra":[],
+		"actorCombiners":[]
+	} 
+]}
