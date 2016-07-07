@@ -657,6 +657,7 @@
     Game_Actor.prototype.changeEquip = function(slotId, item) {
         var old_item = this.equips()[slotId];  
     
+        console.log(this.name)
 
         if (item == null){
             if(DataManager.isArmor(old_item) && old_item.atypeId == Frysning_Dolls.Parameters["aType"]){
