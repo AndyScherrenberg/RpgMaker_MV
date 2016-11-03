@@ -7,9 +7,9 @@ Imported.Frysning_EventMover = true;
  * @author Frysning
  *
  * @param speed
- * @desc The speed of the event. This is default 5 otherwise
+ * @desc The speed of the event. This is default 4 otherwise
  * it will look really weird. See NOTES.
- * @default 5
+ * @default 4
  *
  * @help
  * Useage: This script is free to use for non-commercial.
@@ -150,7 +150,7 @@ Game_Event.prototype.PageSetup = function () {
 
     var index;
 
-    if (!this){
+    if (!this.page()){
         return
     }
     var pages = this.page().list
@@ -158,8 +158,8 @@ Game_Event.prototype.PageSetup = function () {
     for (index = 0; index < pages.length; ++index) {
       if (pages[index].code == 108){
 
-          var notePattern = /<((?:Move_With_Player)|(?:Mimic_Player)|(?:Reverse_Mimic_Player)|(?:Stalk_Player)|(?:Escape_Player))(?:[ ]?)([0-9]*)(?:[ ]?)m?([0-9]*)(?:[ ]?)s?([0-9]*)>/i;
-          var noteTag = pages[index].parameters[0]
+
+          var notePattern = /<((?:Move_With_Player)|(?:Move_Custom)|(?:Mimic_Player)|(?:Reverse_Mimic_Player)|(?:Stalk_Player)|(?:Escape_Player))(?:[ ]?)([0-9]*)(?:[ ]?)m?([0-9]*)(?:[ ]?)s?([0-9]*)>/i;   var noteTag = pages[index].parameters[0]
           var NoteArray = noteTag.match(notePattern);
 
           if (NoteArray === null)
@@ -182,7 +182,8 @@ Game_Event.prototype.PageSetup = function () {
                   this.MoveType = 4;
                   break;
               case "Move_Custom":
-                  this.prototype.MoveType = 5;
+
+                  this.MoveType = 5;
                   break;
           }
           this.isExtraEvent = true
